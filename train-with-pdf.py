@@ -4,9 +4,7 @@ from dotenv import load_dotenv
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import pdfplumber
-import spacy
 
-nlp = spacy.load("vi_core_news_lg")
 
 def extract_text_from_pdf(file_path):
     try:
@@ -50,29 +48,16 @@ vectorizer = TfidfVectorizer().fit(knowledge_base)
 
 # Check loi voi knowledge_base
 print(f"knowlegde_base: {knowledge_base}")
-
-# Xay dung mo hinh nlp
-def chatbot_response(question,knowledge_base):
-    question_vector = nlp(question)
-    best_match = None
-    best_score = 0
-    for key,value in knowledge_base.items():
-        key_vector = nlp(key)
-        similarity = question_vector.similarity(key_vector)
-        if similarity > best_score:
-            best_match = key
-            best_score = similarity
-    
-    if best_match and best_score > 0.7:  # Ngưỡng tương đồng
-        return knowledge_base[best_match]
-    else:
-        return "Xin lỗi, tôi không tìm thấy câu trả lời phù hợp."
 # Bat dau chatbot
 print("Chatbot: Tôi đã đọc tài liệu, hãy hỏi tôi điều gì đó!")
 while True:
     user_input = input("Bạn: ")
-    if user_input.lower() in ["exit", "thoát"]:
-        print("Chatbot: Tạm biệt!")
+    if user_input.lower() in ["tạm biệt", "bye", "exit"]:
+        print("Chatbot: Tạm biệt, hẹn gặp lại!")
         break
-    response = chatbot_response(user_input, knowledge_base)
-    print(f"Chatbot: {response}")
+    # Tim cau tra loi tot nhat
+    answer, similarities = find_best_answer(user_input, knowledge_base, vectorizer)
+    if similarities > 0.5:
+        print(f"Chatbot: {answer}")
+    else:
+        print("Chatbot: Xin lỗi, tôi không tìm thấy câu trả lời phù hợp.")
